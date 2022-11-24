@@ -39,6 +39,7 @@ function verifyJWT(req, res, next) {
 async function run() {
   try {
     const usersCollection = client.db('buyselldb').collection('users');
+    const categoryCollection = client.db('buyselldb').collection('categories');
     //  Save user email & generate JWT
     //  app.put('/user/:email', async (req, res) => {
     //   const email = req.params.email
@@ -69,17 +70,25 @@ async function run() {
         }
         res.status(403).send({ accessToken: '' })
     });
-
+   
 
     app.post('/users', async (req, res) => {
         const user = req.body;
+       
         console.log(user);
-        // TODO: make sure you do not enter duplicate user email
-        // only insert users if the user doesn't exist in the database
+      
         const result = await usersCollection.insertOne(user);
         res.send(result);
     });
 
+
+    app.get('/categories', async (req, res) => {
+      const query = {};
+      const users = await categoryCollection.find(query).toArray();
+      res.send(users);
+  });
+
+    
     
     // Get Bookings
     // app.post('/bookings',async (req, res) => {
