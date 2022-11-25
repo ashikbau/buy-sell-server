@@ -82,11 +82,58 @@ async function run() {
     });
 
 
-    app.get('/categories', async (req, res) => {
-      const query = {};
-      const users = await categoryCollection.find(query).toArray();
-      res.send(users);
+    //  get vehicle caterorized 
+
+    app.get('/categories/:id', async (req, res) => {
+      const id=parseInt(req.params.id)
+      
+      const query = {catId:id}
+     
+        
+      const vehicles = await categoryCollection.find(query).toArray();
+      res.send(vehicles);
   });
+
+  app.get('/users/:email', async (req, res) => {
+    const email=req.params.email
+    const query = {email:email};
+
+    const user = await usersCollection.findOne(query);
+    
+    res.send(user);
+});
+
+
+
+app.post('/category', async (req, res) => {
+  const vehicle = req.body;
+  
+const result = await categoryCollection.insertOne(vehicle);
+  res.send(result);
+});
+
+  
+  
+  
+  //  get vehicles by Email 
+
+  app.get('/categories', async (req, res) => {
+     let x=req.query.email
+     console.log(x)
+    
+    let query = {'sellerInfo.email':x}
+    console.log(query)
+   
+      
+    const vehicles = await categoryCollection.find(query).toArray();
+    console.log(vehicles)
+    res.send(vehicles);
+});
+    
+
+
+
+
 
     
     
