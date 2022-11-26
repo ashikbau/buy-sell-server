@@ -40,6 +40,8 @@ async function run() {
   try {
     const usersCollection = client.db('buyselldb').collection('users');
     const categoryCollection = client.db('buyselldb').collection('categories');
+    const bookingsCollection = client.db('buyselldb').collection('bookings');
+
     //  Save user email & generate JWT
     //  app.put('/user/:email', async (req, res) => {
     //   const email = req.params.email
@@ -137,22 +139,16 @@ const result = await categoryCollection.insertOne(vehicle);
 
     
     
-    // Get Bookings
-    // app.post('/bookings',async (req, res) => {
-    //   const booking = req.body
-    //   console.log(booking)
-    //   const result = await bookingsCollection.insertOne(booking)
+    // post Bookings
+    app.post('/bookings', async (req, res) => {
+      const booking = req.body;
+      console.log(booking);
+      
+const result = await bookingsCollection.insertOne(booking);
+      res.send(result);
+  });
 
-      // console.log('result----->', result)
-      // sendMail(
-      //   {
-      //     subject: 'Booking Successful!',
-      //     message: `Booking Id: ${result?.insertedId}, TransactionId: ${booking.transactionId}`,
-      //   },
-      //   booking?.guestEmail
-      // )
-    //   res.send(result)
-    // })
+
     console.log('Database Connected...')
   } finally {
   }
