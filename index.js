@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
+const { MongoClient, ServerApiVersion, ObjectId, ObjectID } = require('mongodb')
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
 
@@ -141,6 +141,8 @@ const result = await categoryCollection.insertOne(vehicle);
 //  console.log(bookings)
 //  res.send(bookings);
 // });
+
+// get my bookings
 app.get('/bookings', async (req, res) => {
   let x=req.query.email
   console.log(x)
@@ -154,11 +156,7 @@ app.get('/bookings', async (req, res) => {
  res.send(bookings);
 });
 
-
-
-    
-    
-    // post Bookings
+ // post Bookings
     app.post('/bookings', async (req, res) => {
       const booking = req.body;
       console.log(booking);
@@ -166,6 +164,17 @@ app.get('/bookings', async (req, res) => {
 const result = await bookingsCollection.insertOne(booking);
       res.send(result);
   });
+
+
+// delete my bookings(ja)
+  app.delete('/bookings/:id',async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: ObjectId(id) };
+    const result = await bookingsCollection.deleteOne(filter);
+    res.send(result);
+})
+
+
 
 
     console.log('Database Connected...')
