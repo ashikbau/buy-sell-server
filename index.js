@@ -175,6 +175,16 @@ const result = await bookingsCollection.insertOne(booking);
 })
 
 
+// delete my category products
+
+  app.delete('/category/:id',async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: ObjectId(id) };
+    const result = await categoryCollection.deleteOne(filter);
+    res.send(result);
+})
+
+
 
 
     console.log('Database Connected...')
