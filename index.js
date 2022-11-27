@@ -131,16 +131,18 @@ const result = await categoryCollection.insertOne(vehicle);
     console.log(vehicles)
     res.send(vehicles);
 });
+// 
+
+// get all the users
+
+app.get('/users', async (req, res) => {
+  const query = {};
+  const users = await usersCollection.find(query).toArray();
+  res.send(users);
+});
     
 
-// get bookings by email for my bookings for buyer
-// app.get('/bookings', async (req, res) => {
-//   const email=req.query.email
-//   const query = {buyerEmail:email}
-// const bookings = await bookingsCollection.find(query).toArray();
-//  console.log(bookings)
-//  res.send(bookings);
-// });
+
 
 // get my bookings
 app.get('/bookings', async (req, res) => {
