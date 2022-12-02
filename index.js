@@ -18,24 +18,24 @@ app.use(express.json())
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.0avqkuj.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-function verifyJWT(req, res, next) {
+// function verifyJWT(req, res, next) {
 
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        return res.status(401).send('unauthorized access');
-    }
+// //     const authHeader = req.headers.authorization;
+// //     if (!authHeader) {
+// //         return res.status(401).send('unauthorized access');
+// //     }
 
-    const token = authHeader.split(' ')[1];
+// //     const token = authHeader.split(' ')[1];
 
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-        if (err) {
-            return res.status(403).send({ message: 'forbidden access' })
-        }
-        req.decoded = decoded;
-        next();
-    })
+// //     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+// //         if (err) {
+// //             return res.status(403).send({ message: 'forbidden access' })
+// //         }
+// //         req.decoded = decoded;
+// //         next();
+// //     })
 
-}
+// // }
 
 async function run() {
   try {
@@ -43,6 +43,7 @@ async function run() {
     const categoryCollection = client.db('buyselldb').collection('categories');
     const bookingsCollection = client.db('buyselldb').collection('bookings');
     const paymentsCollection = client.db('buyselldb').collection('payments');
+    const advertiseCollection = client.db('buyselldb').collection('advertises');
 
   //   const verifyAdmin = async (req, res, next) => {
   //     const decodedEmail = req.decoded.email;
@@ -81,7 +82,7 @@ async function run() {
     // });
 
      // Save user email & generate JWT
-     app.put('/users/:email',async (req, res) => {
+     app.put('/users/:email', async (req, res) => {
       const email = req.params.email
       const user = req.body
       const filter = { email: email}
@@ -127,7 +128,7 @@ async function run() {
 
     //  get vehicle caterorized 
 
-    app.get('/categories/:id',async (req, res) => {
+    app.get('/categories/:id',  async (req, res) => {
       const id=parseInt(req.params.id)
       
       const query = {catId:id}
@@ -152,7 +153,7 @@ async function run() {
 
 
 
-app.get('/users/admin/:email', async (req, res) => {
+app.get('/users/admin/:email',  async (req, res) => {
   const email = req.params.email;
   const query = { email }
   const user = await usersCollection.findOne(query);
@@ -166,22 +167,31 @@ const result = await categoryCollection.insertOne(vehicle);
   res.send(result);
 });
 
+// post advertise car
+app.post('/advertises', async (req, res) => {
+  const vehicle = req.body;
+  
+const result = await advertiseCollection.insertOne(vehicle);
+  res.send(result);
+});
+
  
   //  update product status after booking
 
 app.put('/categories/:id',  async (req, res) => {
-  console.log('i AM HERE')
+  
   const id = req.params.id;
   const product=req.body
   const filter = { _id: ObjectId(id) }
-  console.log(product,filter)
-  const options = { upsert: true };
-  const updatedDoc = {
-      $set: 
-          product
+  // console.log(product,filter)
+  // // const options = { upsert: true };
+  // // const updatedDoc = {
+  // //     $set: 
+  // //         product
       
-  }
-  const result = await categoryCollection.updateOne(filter, updatedDoc, options);
+  // // }
+  const result = await categoryCollection.deleteOne(filter);
+  const finalresult= await categoryCollection.insertOne(product)
   console.log(result)
   res.send(result);
 });
@@ -212,6 +222,13 @@ app.get('/users', async (req, res) => {
   const users = await usersCollection.find(query).toArray();
   res.send(users);
 });
+
+// get  all  adventisements
+app.get('/advertisements', async (req, res) => {
+  const query = {};
+  const users = await advertiseCollection.find(query).toArray();
+  res.send(users);
+});
     
 
 
@@ -220,13 +237,14 @@ app.get('/users', async (req, res) => {
 app.get('/bookings', async (req, res) => {
   let x=req.query.email
   // console.log(x)
+  // console.log('my mail',x)
  
- let query = {buyerEmail:x}
-//  console.log(query)
+ let query = {email:x}
+ console.log('my mail',query)
 
    
  const bookings = await bookingsCollection.find(query).toArray();
-//  console.log(bookings)
+
  res.send(bookings);
 });
 
@@ -241,8 +259,10 @@ app.get('/bookings/:id', async (req, res) => {
 
  // post Bookings
     app.post('/bookings',async (req, res) => {
+      
+
       const booking = req.body;
-      // console.log(booking);
+     
       
 const result = await bookingsCollection.insertOne(booking);
       res.send(result);
@@ -251,11 +271,15 @@ const result = await bookingsCollection.insertOne(booking);
 
 // delete my bookings(ja)
   app.delete('/bookings/:id', async (req, res) => {
+    console.log('I am deleting')
     const id = req.params.id;
-    const filter = { _id: ObjectId(id) };
+    const filter = { _id:id };
+   
     const result = await bookingsCollection.deleteOne(filter);
+    console.log( 'result', result)
     res.send(result);
 })
+
 // Delete Users
   app.delete('/users/:id', async (req, res) => {
     const id = req.params.id;
@@ -275,10 +299,10 @@ const result = await bookingsCollection.insertOne(booking);
 })
 
 // payment part
-app.post('/create-payment-intent',verifyJWT, async (req, res) => {
+app.post('/create-payment-intent', async (req, res) => {
   const booking = req.body;
-  const price = booking.price;
-  const amount = parseFloat(price) * 100;
+  const resalePrice = booking.resalePrice;
+  const amount = parseFloat(resalePrice) * 100;
 
   const paymentIntent = await stripe.paymentIntents.create({
       currency: 'usd',
@@ -292,7 +316,7 @@ app.post('/create-payment-intent',verifyJWT, async (req, res) => {
   });
 });
 
-app.post('/payments',verifyJWT, async (req, res) =>{
+app.post('/payments', async (req, res) =>{
   const payment = req.body;
   const result = await paymentsCollection.insertOne(payment);
   const id = payment.bookingId
